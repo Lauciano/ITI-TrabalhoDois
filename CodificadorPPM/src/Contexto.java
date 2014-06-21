@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class Contexto {
 
-	private ArrayList<Instancia> v;
+	public ArrayList<Instancia> v;
 	private String instancia;
 	
 	public Contexto(String inst){
@@ -22,31 +22,33 @@ public class Contexto {
 		return total;
 	}
 	
-	public void atualizaProbs(){
+	private void atualizaProbs(){
 		double total = getTotal();
 		
 		for(int i = 0; i < v.size(); i++){
 			v.get(i).setProbabilidade(((double)v.get(i).getFrequencia())/total);
 		}
+		
 	}
 	
 	public void addOcorrencia(String s){
 		
 		if(!temIndice(s)){
 			Instancia newInst1 = new Instancia(s, 1);
-			Instancia newInst2 = new Instancia("ESC", 1);
+			if(!s.equals("ESC")) addOcorrencia("ESC");
 			v.add(newInst1);
-			v.add(newInst2);
 			atualizaProbs();
 		}else{
 			for(int i = 0; i < v.size(); i++){
 				if(v.get(i).getSymbol().equals(s)){
 					v.get(i).setFrequencia(v.get(i).getFrequencia() + 1);
+					atualizaProbs();
+					break;
 				}
-				atualizaProbs();
 			}
 		}
 		
+		v.sort(Instancia.InstanciaComparator);
 	}
 	
 	public boolean temIndice(String s){
