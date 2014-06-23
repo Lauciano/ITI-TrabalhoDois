@@ -56,96 +56,120 @@ public class TabelaPPM {
 		Leitor leitor = new Leitor(arquivo);
 		String lido, cpre = "", cprepre = "";
 		Contexto caux;
+		boolean temRemocaoEmK1 = false, temRemocaoEmK0 = false;
+		boolean inserido = false;
 		
+		// Laço de Leitura do arquivo
 		while(!(lido = "" + leitor.getNextCharacter()).equals("¬")){
+			System.out.println("Eu li: " + lido);
 			caux = getContextoEmK2(cprepre + cpre);
 			if(caux != null){
 				//Há contexto K2 cprepre cpre
 				if(caux.temIndice(lido)){
-					codigo.add(caux.getInstancia(lido).getIntervalo());
+					codigo.add(Intervalo.copy(caux.getInstancia(lido).getIntervalo()));
+					inserido = true;
+					caux.addOcorrencia(lido);
 				} else {
-					codigo.add(caux.getInstancia("ESC").getIntervalo());
+					if(caux.temIndice("ESC")){
+						codigo.add(Intervalo.copy(caux.getInstancia("ESC").getIntervalo()));
+					}
+					//Fazer a remoção temporária do povim
+					Contexto caux2 = getContextoEmK1(cpre);
+					Contexto copia = Contexto.copy(caux2);
+					for(Instancia i : caux2.v){
+						if(!i.getSymbol().equals("ESC")) copia.removeInstancia(i.getSymbol());
+					}
+					temRemocaoEmK1 = true;
+					caux.addOcorrencia(lido);
+					//Remove ESC caso o alfabeto esteja completo
+					if(caux2.v.size() > alfabeto.size()){
+						caux2.removeInstancia("ESC");
+					}
+					caux = copia;
 				}
-				caux.addOcorrencia(lido);
 			} else if(!cprepre.equals("")){
 				//Não há contexto K2, mas há cprepre
 				//Portanto deve ser adicionado
 				Contexto caux2 = new Contexto(cprepre + cpre);
 				k2.add(caux2);
 				caux2.addOcorrencia(lido);
+				//Remove ESC caso o alfabeto esteja completo
+				if(caux2.v.size() > alfabeto.size()){
+					caux2.removeInstancia("ESC");
+				}
 			}
 			
-			caux = getContextoEmK1(cpre); //Esta linha será modificada com a remoção
+			if(!temRemocaoEmK1) caux = getContextoEmK1(cpre); //Esta linha será modificada com a remoção
 			if(caux != null){
 				//Há contexto K1 cpre
 				if(caux.temIndice(lido)){
-					codigo.add(caux.getInstancia(lido).getIntervalo());
+					if(!inserido){
+						codigo.add(Intervalo.copy(caux.getInstancia(lido).getIntervalo()));
+						inserido = true;
+					}
+					caux.addOcorrencia(lido);
+					//Remove ESC caso o alfabeto esteja completo
+					if(caux.v.size() > alfabeto.size()){
+						caux.removeInstancia("ESC");
+					}
 				} else {
-					codigo.add(caux.getInstancia("ESC").getIntervalo());
+					if(caux.temIndice("ESC")){
+						if(!inserido) codigo.add(Intervalo.copy(caux.getInstancia("ESC").getIntervalo()));
+					}
+					//Fazer a remoção temporária do povim
+					Contexto copia = Contexto.copy(k0);
+					for(Instancia i : caux.v){
+						if(!i.getSymbol().equals("ESC")) copia.removeInstancia(i.getSymbol());
+					}
+					temRemocaoEmK0 = true;
+					caux.addOcorrencia(lido);
+					//Remove ESC caso o alfabeto esteja completo
+					if(caux.v.size() > alfabeto.size()){
+						caux.removeInstancia("ESC");
+					}
+					caux = copia;
 				}
-				caux.addOcorrencia(lido);
 			} else if(!cpre.equals("")){
 				//Não há contexto K1, mas há cpre
 				//Portanto deve ser adicionado
 				Contexto caux2 = new Contexto(cpre);
 				k1.add(caux2);
 				caux2.addOcorrencia(lido);
-			}
-			
-			//O k0 será modificado com a remoção
-			if(k0.temIndice(lido)){
-				codigo.add(k0.getInstancia(lido).getIntervalo());
-			} else {
-				if(k0.temIndice("ESC")){
-					codigo.add(k0.getInstancia("ESC").getIntervalo());
+				//Remove ESC caso o alfabeto esteja completo
+				if(caux2.v.size() > alfabeto.size()){
+					caux2.removeInstancia("ESC");
 				}
-				codigo.add(km1.getInstancia(lido).getIntervalo());
-				km1.removeInstancia(lido);
+			}
+						
+			//O k0 será modificado com a remoção
+			if(!temRemocaoEmK0) caux = k0;
+			if(caux.temIndice(lido)){				
+				if(!inserido) codigo.add(Intervalo.copy(caux.getInstancia(lido).getIntervalo()));
+			} else {
+				if(caux.temIndice("ESC")){
+					if(!inserido) codigo.add(Intervalo.copy(caux.getInstancia("ESC").getIntervalo()));
+				}
+				//Apenas pega o código se o K = 0 original não tem
+				if(!k0.temIndice(lido)){
+					if(!inserido) codigo.add(Intervalo.copy(km1.getInstancia(lido).getIntervalo()));
+					km1.removeInstancia(lido);
+				}
 			}
 			k0.addOcorrencia(lido);
-			
-			if(k0.v.size() == alfabeto.size() + 1){
+			//Remoção de ESC caso já tenha todo o alfabeto
+			if(k0.v.size() > alfabeto.size()){
 				k0.removeInstancia("ESC");
 			}
 			
-			for(Contexto c : k1){
-				if(c.v.size() == alfabeto.size() + 1){
-					c.removeInstancia("ESC");
-				}
-			}
-			
-			for(Contexto c : k2){
-				if(c.v.size() == alfabeto.size() + 1){
-					c.removeInstancia("ESC");
-				}
-			}
-			
+			//Atualização de variáveis
+			temRemocaoEmK1 = false;
+			temRemocaoEmK0 = false;
+			inserido = false;
 			cprepre = cpre;
 			cpre = lido;
 		}
 		
 		return codigo;
-		
-		/*if((s = "" + leitor.getNextCharacter()).equals("¬")) return null;
-		codigo.add(km1.getInstancia(s).getIntervalo());
-		k0.addOcorrencia(s);
-		km1.removeInstancia(s);
-		cpre = s;
-		
-		if((s = "" + leitor.getNextCharacter()).equals("¬")) return codigo;
-		caux = getContextoEmK1(cpre);
-		if(caux != null){
-			if(caux.temIndice(s)){
-				
-			}
-		} else {
-			codigo.add(km1.getInstancia(s).getIntervalo());
-			k0.addOcorrencia(s);
-			km1.removeInstancia(s);
-		}
-		cprepre = cpre;
-		cpre = s;*/
-		
 	}
 	
 	// Getters e Setters
@@ -180,6 +204,33 @@ public class TabelaPPM {
 
 	public void setK2(ArrayList<Contexto> k2) {
 		this.k2 = k2;
+	}
+	
+	// To String
+	public String toString(){
+		String tabela = "********** k = -1 **********\n";
+		for(Instancia i : this.getkm1().v){
+			tabela = tabela + i.getSymbol() + " " + i.getFrequencia() + " " + i.getProbabilidade() + "\n";
+		}
+		tabela = tabela + "********** k = 0 **********\n";
+		for(Instancia i : this.getK0().v){
+			tabela = tabela + i.getSymbol() + " " + i.getFrequencia() + " " + i.getProbabilidade() + "\n";
+		}
+		tabela = tabela + "********** k = 1 **********\n";
+		for(Contexto c : this.getK1()){
+			tabela = tabela + "********** " + c.getInstancia() + " **********\n";
+			for(Instancia i : c.v){
+				tabela = tabela + i.getSymbol() + " " + i.getFrequencia() + " " + i.getProbabilidade() + "\n";
+			}
+		}
+		tabela = tabela + "********** k = 2 **********\n";
+		for(Contexto c : this.getK2()){
+			tabela = tabela + "********** " + c.getInstancia() + " **********\n";
+			for(Instancia i : c.v){
+				tabela = tabela + i.getSymbol() + " " + i.getFrequencia() + " " + i.getProbabilidade() + '\n';
+			}
+		}
+		return tabela;
 	}
 	
 }

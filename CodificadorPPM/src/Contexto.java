@@ -89,4 +89,11 @@ public class Contexto {
 		atualizaIntervalos();
 	}
 	
+	public static Contexto copy(Contexto c){
+		Contexto copia = new Contexto(c.instancia);
+		for(Instancia i : c.v){
+			copia.v.add(Instancia.copy(i));
+		}
+		return copia;
+	}
 }

@@ -9,34 +9,13 @@ public class CodificadorPPM {
 		ArrayList<Character> ar = l.getAlfabeto();
 		TabelaPPM tppm = new TabelaPPM(ar);
 		ArrayList<Intervalo> saida = tppm.geraIntervalos("texto.txt");
-		
+
 		System.out.println("********** Tabela **********");
-		System.out.println("********** k = -1 **********");
-		for(Instancia i : tppm.getkm1().v){
-			System.out.println(i.getSymbol() + " " + i.getFrequencia() + " " + i.getProbabilidade());
-		}
-		System.out.println("********** k = 0 **********");
-		for(Instancia i : tppm.getK0().v){
-			System.out.println(i.getSymbol() + " " + i.getFrequencia() + " " + i.getProbabilidade());
-		}
-		System.out.println("********** k = 1 **********");
-		for(Contexto c : tppm.getK1()){
-			System.out.println("********** " + c.getInstancia() + " **********");
-			for(Instancia i : c.v){
-				System.out.println(i.getSymbol() + " " + i.getFrequencia() + " " + i.getProbabilidade());
-			}
-		}
-		System.out.println("********** k = 2 **********");
-		for(Contexto c : tppm.getK2()){
-			System.out.println("********** " + c.getInstancia() + " **********");
-			for(Instancia i : c.v){
-				System.out.println(i.getSymbol() + " " + i.getFrequencia() + " " + i.getProbabilidade());
-			}
-		}
+		System.out.println(tppm.toString());
 		
 		System.out.println("********** Intervalos **********");
-		for(Intervalo i : saida){
-			System.out.println(i.toString());
+		for(int i = 0; i < saida.size(); i++){
+			System.out.println(i + " " + saida.get(i).toString());
 		}
 		
 		/*for(int i = 0; i < ar.size(); i++){

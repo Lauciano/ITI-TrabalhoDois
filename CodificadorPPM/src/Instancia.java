@@ -10,7 +10,7 @@ public class Instancia{
 	public Instancia(String s, int f){
 		simb = s;
 		freq = f;
-		intervalo = new Intervalo(0, 1);
+		intervalo = new Intervalo(simb, 0, 1);
 	}
 	
 	public String getSymbol(){
@@ -70,5 +70,13 @@ public class Instancia{
 			
 		}
 	};
+	
+	//Copia Objeto
+	public static Instancia copy(Instancia i){
+		Instancia copia = new Instancia(i.simb, i.freq);
+		copia.setProbabilidade(i.prob);
+		copia.setIntervalo(i.intervalo.getInicio(), i.intervalo.getFim());
+		return copia;
+	}
 	
 }
