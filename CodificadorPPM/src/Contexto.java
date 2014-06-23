@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Contexto {
 
@@ -28,7 +29,14 @@ public class Contexto {
 		for(int i = 0; i < v.size(); i++){
 			v.get(i).setProbabilidade(((double)v.get(i).getFrequencia())/total);
 		}
-		
+	}
+	
+	private void atualizaIntervalos(){
+		double aux = 0;
+		for(int i = 0; i < v.size(); i++){
+			v.get(i).setIntervalo(aux, v.get(i).getProbabilidade() + aux);
+			aux += v.get(i).getProbabilidade();
+		}
 	}
 	
 	public void addOcorrencia(String s){
@@ -37,18 +45,18 @@ public class Contexto {
 			Instancia newInst1 = new Instancia(s, 1);
 			if(!s.equals("ESC")) addOcorrencia("ESC");
 			v.add(newInst1);
-			atualizaProbs();
 		}else{
 			for(int i = 0; i < v.size(); i++){
 				if(v.get(i).getSymbol().equals(s)){
 					v.get(i).setFrequencia(v.get(i).getFrequencia() + 1);
-					atualizaProbs();
 					break;
 				}
 			}
 		}
 		
-		v.sort(Instancia.InstanciaComparator);
+		Collections.sort(v, Instancia.InstanciaComparator);
+		atualizaProbs();
+		atualizaIntervalos();
 	}
 	
 	public boolean temIndice(String s){
@@ -67,6 +75,18 @@ public class Contexto {
 			}
 		}
 		return null;
+	}
+	
+	public void removeInstancia(String s){
+		for(int i = 0; i < v.size(); i++){
+			if(v.get(i).getSymbol().equals(s)){
+				v.remove(i);
+				break;
+			}
+		}
+		Collections.sort(v, Instancia.InstanciaComparator);
+		atualizaProbs();
+		atualizaIntervalos();
 	}
 	
 }

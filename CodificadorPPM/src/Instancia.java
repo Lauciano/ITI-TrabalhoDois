@@ -1,16 +1,16 @@
 import java.util.Comparator;
 
-
-
 public class Instancia{
 
 	private String simb;
 	private int freq;
 	private double prob;
+	private Intervalo intervalo;
 	
 	public Instancia(String s, int f){
 		simb = s;
 		freq = f;
+		intervalo = new Intervalo(0, 1);
 	}
 	
 	public String getSymbol(){
@@ -35,6 +35,15 @@ public class Instancia{
 	
 	public void setProbabilidade(double p){
 		prob = p;
+	}
+	
+	public Intervalo getIntervalo(){
+		return intervalo;
+	}
+	
+	public void setIntervalo(double inicio, double fim){
+		intervalo.setInicio(inicio);
+		intervalo.setFim(fim);
 	}
 	
 	public int compareTo(Instancia i){
